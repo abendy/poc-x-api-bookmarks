@@ -2,12 +2,18 @@ import requests
 from requests_oauthlib import OAuth1
 import json
 import sys
+import os
+import time
+from dotenv import load_dotenv
 
-# Your X API credentials
-API_KEY = "your_api_key_here"
-API_SECRET = "your_api_secret_here"
-ACCESS_TOKEN = "your_access_token_here"
-ACCESS_TOKEN_SECRET = "your_access_token_secret_here"
+# Load environment variables from .env file
+load_dotenv()
+
+# Your X API credentials from environment variables
+API_KEY = os.environ.get("X_API_KEY")
+API_SECRET = os.environ.get("X_API_SECRET")
+ACCESS_TOKEN = os.environ.get("X_ACCESS_TOKEN")
+ACCESS_TOKEN_SECRET = os.environ.get("X_ACCESS_TOKEN_SECRET")
 
 def get_bookmarks():
     """Fetch user bookmarks from X API"""
