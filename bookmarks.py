@@ -10,14 +10,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Your X API credentials from environment variables
-API_KEY = os.environ.get("X_API_KEY")
-API_SECRET = os.environ.get("X_API_SECRET")
-ACCESS_TOKEN = os.environ.get("X_ACCESS_TOKEN")
-ACCESS_TOKEN_SECRET = os.environ.get("X_ACCESS_TOKEN_SECRET")
+API_KEY = os.environ.get("API_KEY")
+API_SECRET = os.environ.get("API_SECRET")
+ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
+ACCESS_TOKEN_SECRET = os.environ.get("ACCESS_TOKEN_SECRET")
 
 def check_credentials():
     """Verify all required credentials are available"""
-    required_vars = ["X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET"]
+    required_vars = ["API_KEY", "API_SECRET", "ACCESS_TOKEN", "ACCESS_TOKEN_SECRET"]
     missing = [var for var in required_vars if not os.environ.get(var)]
     
     if missing:
