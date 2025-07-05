@@ -1,10 +1,10 @@
 # X API Bookmarks Fetcher
 
-A Python script to fetch your X (Twitter) bookmarks using the X API v2 with proper rate limiting and OAuth 1.0a authentication.
+A Python script to fetch your X (Twitter) bookmarks using the X API v2 with proper rate limiting and OAuth 2.0 User Context authentication.
 
 ## Features
 
-- ✅ OAuth 1.0a authentication using app credentials
+- ✅ OAuth 2.0 User Context authentication
 - ✅ Rate limit monitoring and handling
 - ✅ Environment variable configuration
 - ✅ Conservative defaults to avoid hitting API limits
@@ -18,40 +18,34 @@ A Python script to fetch your X (Twitter) bookmarks using the X API v2 with prop
 
 1. **Create a X Developer Account** at [developer.x.com](https://developer.x.com)
 2. **Create a new App** in your developer dashboard
-3. **Generate API keys and tokens:**
-   - API Key (Consumer Key)
-   - API Secret (Consumer Secret)
-   - Access Token
-   - Access Token Secret
+3. **Generate OAuth 2.0 User Context credentials:**
+   - User Access Token (Bearer Token)
 4. **Ensure your app has the following permissions:**
    - Read permissions
-   - OAuth 1.0a enabled
+   - OAuth 2.0 enabled with User Context
 
 ### Python Dependencies
 
 ```bash
-pip install requests requests-oauthlib python-dotenv
+pip install requests python-dotenv
 ```
 
 ## Installation
 
 1. **Clone or download the script files:**
    - `bookmarks.py` - Main script
-   - `.env.template` - Environment variables template
 
 2. **Create your environment file:**
 
    ```bash
-   cp .env.template .env
+   # Create .env file with your OAuth 2.0 User Context credentials
+   touch .env
    ```
 
 3. **Edit `.env` with your actual credentials:**
 
    ```bash
-   X_API_KEY=your_actual_api_key_here
-   X_API_SECRET=your_actual_api_secret_here
-   X_ACCESS_TOKEN=your_actual_access_token_here
-   X_ACCESS_TOKEN_SECRET=your_actual_access_token_secret_here
+   BEARER_TOKEN=your_oauth2_user_access_token_here
    ```
 
 ## Usage
@@ -154,21 +148,24 @@ The script handles common errors gracefully:
 ### Common Issues
 
 1. **"Missing required environment variables"**
-   - Check that your `.env` file exists and has all four credentials
+   - Check that your `.env` file exists and has the BEARER_TOKEN
    - Verify there are no extra spaces or quotes around values
+   - Ensure you're using OAuth 2.0 User Context Bearer Token, not OAuth 2.0 Application-Only
 
 2. **"Rate limit exceeded"**
    - Wait for the reset time shown in the error message
    - Use smaller `--max-results` values to conserve requests
 
 3. **"Error: 401 Unauthorized"**
-   - Verify your API credentials are correct
+   - Verify your OAuth 2.0 User Context Bearer Token is correct
    - Check that your X app has read permissions
-   - Ensure OAuth 1.0a is enabled for your app
+   - Ensure OAuth 2.0 User Context is enabled for your app
+   - Your access token may have expired - get a new one
 
 4. **"Error: 403 Forbidden"**
    - Your app may not have the required permissions
    - Check your X Developer Portal app settings
+   - Ensure you're using OAuth 2.0 User Context authentication, not Application-Only
 
 ### Debug Steps
 
@@ -176,7 +173,7 @@ The script handles common errors gracefully:
 
    ```bash
    # Check environment variables are loaded
-   python3 -c "from dotenv import load_dotenv; import os; load_dotenv(); print('API Key:', os.environ.get('X_API_KEY', 'NOT FOUND')[:10] + '...')"
+   python3 -c "from dotenv import load_dotenv; import os; load_dotenv(); print('Bearer Token:', os.environ.get('BEARER_TOKEN', 'NOT FOUND')[:10] + '...')"
    ```
 
 2. **Test with minimal request:**
@@ -213,7 +210,7 @@ To filter non-folder bookmarks, you would need to:
 This script uses the following X API v2 endpoint:
 
 - **Endpoint**: `GET /2/users/me/bookmarks`
-- **Authentication**: OAuth 1.0a
+- **Authentication**: OAuth 2.0 User Context (Bearer Token)
 - **Rate Limit**: 75 requests per 15 minutes
 - **Documentation**: [X API v2 Bookmarks](https://developer.x.com/en/docs/twitter-api/tweets/bookmarks/api-reference/get-users-id-bookmarks)
 

@@ -1,5 +1,4 @@
 import requests
-from requests_oauthlib import OAuth1
 import json
 import sys
 import os
@@ -10,21 +9,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Your X API credentials from environment variables
-API_KEY = os.environ.get("API_KEY")
-API_SECRET = os.environ.get("API_SECRET")
-ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
-ACCESS_TOKEN_SECRET = os.environ.get("ACCESS_TOKEN_SECRET")
+# OAuth 2.0 User Context credentials (obtained via PKCE flow)
+USER_ACCESS_TOKEN = os.environ.get("USER_ACCESS_TOKEN")
 
 def check_credentials():
     """Verify all required credentials are available"""
-    required_vars = ["API_KEY", "API_SECRET", "ACCESS_TOKEN", "ACCESS_TOKEN_SECRET"]
-    missing = [var for var in required_vars if not os.environ.get(var)]
-    
-    if missing:
-        print(f"Error: Missing required environment variables: {', '.join(missing)}")
-        print("Please create a .env file with:")
-        for var in required_vars:
-            print(f"  {var}=your_value_here")
+    if not USER_ACCESS_TOKEN:
+        print("Error: Missing required environment variable: USER_ACCESS_TOKEN")
+        print("Please run oauth2_pkce.py first to get a user access token")
+        print("Or add USER_ACCESS_TOKEN to your .env file")
         return False
     return True
 
@@ -42,24 +35,50 @@ def handle_rate_limit_response(response):
         return True
     return False
 
+def create_oauth2_headers():
+    """Create OAuth 2.0 User Context authentication headers"""
+    return {
+        "Authorization": f"Bearer {USER_ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+def get_user_id(headers):
+    """Get the current user's ID"""
+    try:
+        url = "https://api.twitter.com/2/users/me"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data.get('data', {}).get('id')
+        else:
+            print(f"Error getting user ID: {response.status_code} - {response.text}")
+            return None
+    except Exception as e:
+        print(f"Error getting user ID: {e}")
+        return None
+
 def get_bookmarks(max_results=25, show_rate_limit_info=True):
     """Fetch user bookmarks from X API with rate limiting considerations"""
     
     if not check_credentials():
         return None
     
-    # Set up OAuth 1.0a authentication
-    auth = OAuth1(
-        API_KEY,
-        client_secret=API_SECRET,
-        resource_owner_key=ACCESS_TOKEN,
-        resource_owner_secret=ACCESS_TOKEN_SECRET
-    )
+    # Create OAuth 2.0 User Context authentication headers
+    headers = create_oauth2_headers()
     
-    # API endpoint
-    url = "https://api.twitter.com/2/users/me/bookmarks"
+    # First, get the user ID
+    user_id = get_user_id(headers)
+    if not user_id:
+        print("Failed to get user ID. Check your access token.")
+        return None
     
-    # Parameters for the request - being conservative with max_results
+    print(f"Using user ID: {user_id}")
+    
+    # API endpoint - use specific user ID instead of /me
+    url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
+    
+    # Parameters for the request
     params = {
         "tweet.fields": "created_at,author_id,text,public_metrics",
         "expansions": "author_id",
@@ -72,7 +91,7 @@ def get_bookmarks(max_results=25, show_rate_limit_info=True):
         if show_rate_limit_info:
             print("Rate limit: 75 requests per 15 minutes for bookmarks endpoint")
         
-        response = requests.get(url, auth=auth, params=params)
+        response = requests.get(url, headers=headers, params=params)
         
         # Handle rate limiting
         if handle_rate_limit_response(response):
@@ -143,15 +162,17 @@ def get_bookmarks_json(max_results=25):
     """Fetch bookmarks and return raw JSON"""
     if not check_credentials():
         return None
-        
-    auth = OAuth1(
-        API_KEY,
-        client_secret=API_SECRET,
-        resource_owner_key=ACCESS_TOKEN,
-        resource_owner_secret=ACCESS_TOKEN_SECRET
-    )
     
-    url = "https://api.twitter.com/2/users/me/bookmarks"
+    # Create OAuth 2.0 User Context authentication headers
+    headers = create_oauth2_headers()
+    
+    # First, get the user ID
+    user_id = get_user_id(headers)
+    if not user_id:
+        print("Failed to get user ID. Check your access token.")
+        return None
+    
+    url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
     params = {
         "tweet.fields": "created_at,author_id,text,public_metrics",
         "expansions": "author_id",
@@ -160,7 +181,7 @@ def get_bookmarks_json(max_results=25):
     }
     
     try:
-        response = requests.get(url, auth=auth, params=params)
+        response = requests.get(url, headers=headers, params=params)
         
         if handle_rate_limit_response(response):
             return None
@@ -195,6 +216,12 @@ Rate Limits:
   - Bookmarks endpoint: 75 requests per 15 minutes
   - Be conservative with requests to avoid hitting limits
   - Use --max-results to control how many bookmarks to fetch
+
+Authentication:
+  - Requires OAuth 2.0 User Context authentication
+  - Set USER_ACCESS_TOKEN in your .env file
+  - Run oauth2_pkce.py first to get a user access token
+  - This token is obtained via the OAuth 2.0 Authorization Code flow with PKCE
     """)
 
 if __name__ == "__main__":
