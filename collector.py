@@ -178,6 +178,15 @@ class CompleteBookmarkCollector:
         conn.commit()
         conn.close()
 
+    def verify_bookmark_stored(self, tweet_id):
+        """Verify that a bookmark exists in local database before deletion"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT tweet_id FROM bookmarks WHERE tweet_id = ?", (tweet_id,))
+        result = cursor.fetchone()
+        conn.close()
+        return result is not None
+
     def execute_collection_cycle(self, cycle_number):
         """Execute one complete collection cycle: GET → Store → DELETE"""
         cycle_start = datetime.now()
@@ -227,12 +236,19 @@ class CompleteBookmarkCollector:
             print("Step 3: Deleting bookmarks to expose next batch...")
             for i, bookmark in enumerate(bookmarks, 1):
                 try:
-                    print(f"Deleting bookmark {i}/{bookmarks_found}: {bookmark['id']}")
-                    success = self.delete_bookmark(bookmark["id"])
+                    tweet_id = bookmark["id"]
+
+                    # FAIL-SAFE: Verify local copy exists before deletion
+                    if not self.verify_bookmark_stored(tweet_id):
+                        print(f"⚠️  FAIL-SAFE: {tweet_id} not verified in DB, skipping deletion")
+                        continue
+
+                    print(f"Deleting bookmark {i}/{bookmarks_found}: {tweet_id} (verified in DB)")
+                    success = self.delete_bookmark(tweet_id)
                     if success:
                         deleted_count += 1
                     else:
-                        print(f"Failed to delete bookmark {bookmark['id']}")
+                        print(f"Failed to delete bookmark {tweet_id}")
 
                     if i < bookmarks_found:  # Don't wait after last deletion
                         self.wait_rate_limit()
