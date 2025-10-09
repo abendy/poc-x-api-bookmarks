@@ -3,11 +3,14 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^\.vscode/
       - id: end-of-file-fixer
+        exclude: ^\.vscode/
       - id: check-yaml
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-json
+        exclude: ^\.vscode/
       - id: check-toml
       - id: check-xml
       - id: check-ast

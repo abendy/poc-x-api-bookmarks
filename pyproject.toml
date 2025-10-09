@@ -56,7 +56,9 @@ ignore = [
     "RUF012",  # Allow mutable class attributes without ClassVar for now
     "PTH110", # Allow os.path.exists for now (pathlib migration can be gradual)
     "PTH123", # Allow os.path.dirname/basename for now (pathlib migration can be gradual)
+    "PTH107", # Allow os.remove for now (pathlib migration can be gradual)
     "SIM108", # Allow if-else over ternary when more readable
+    "N802",   # Allow do_GET method name (required by BaseHTTPRequestHandler)
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
@@ -79,6 +81,7 @@ exclude = [
     ".svn",
     ".tox",
     ".venv",
+    ".vscode",
     "__pypackages__",
     "_build",
     "buck-out",
@@ -113,15 +116,21 @@ disallow_untyped_defs = false
 exclude = [
     "venv",
     ".venv",
+    ".vscode",
     "build",
     "dist",
 ]
+
+[[tool.mypy.overrides]]
+module = ["dotenv"]
+ignore_missing_imports = true
 
 [tool.pyright]
 pythonVersion = "3.9"
 exclude = [
     "venv",
     ".venv",
+    ".vscode",
     "build",
     "dist",
     ".mypy_cache",
@@ -129,6 +138,7 @@ exclude = [
 ]
 reportMissingTypeStubs = false
 reportUnknownMemberType = false
+reportMissingImports = false
 
 [tool.pytest.ini_options]
 minversion = "8.0"

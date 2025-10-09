@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import requests
 import json
-import sys
 import os
+import sys
 import time
+
+import requests
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -13,6 +14,7 @@ load_dotenv()
 # Your X API credentials from environment variables
 # OAuth 2.0 User Context credentials (obtained via PKCE flow)
 USER_ACCESS_TOKEN = os.environ.get("USER_ACCESS_TOKEN")
+
 
 def check_credentials():
     """Verify all required credentials are available"""
@@ -23,36 +25,38 @@ def check_credentials():
         return False
     return True
 
+
 def handle_rate_limit_response(response):
     """Handle rate limit responses and provide helpful information"""
     if response.status_code == 429:
-        reset_time = response.headers.get('x-rate-limit-reset')
+        reset_time = response.headers.get("x-rate-limit-reset")
         if reset_time:
             reset_timestamp = int(reset_time)
             current_time = int(time.time())
             wait_time = reset_timestamp - current_time
-            print(f"Rate limit exceeded. Reset in {wait_time} seconds ({time.ctime(reset_timestamp)})")
+            print(
+                f"Rate limit exceeded. Reset in {wait_time} seconds ({time.ctime(reset_timestamp)})"
+            )
         else:
             print("Rate limit exceeded. Please wait 15 minutes before trying again.")
         return True
     return False
 
+
 def create_oauth2_headers():
     """Create OAuth 2.0 User Context authentication headers"""
-    return {
-        "Authorization": f"Bearer {USER_ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
+    return {"Authorization": f"Bearer {USER_ACCESS_TOKEN}", "Content-Type": "application/json"}
+
 
 def get_user_id(headers):
     """Get the current user's ID"""
     try:
         url = "https://api.twitter.com/2/users/me"
         response = requests.get(url, headers=headers)
-        
+
         if response.status_code == 200:
             data = response.json()
-            return data.get('data', {}).get('id')
+            return data.get("data", {}).get("id")
         else:
             print(f"Error getting user ID: {response.status_code} - {response.text}")
             return None
@@ -60,134 +64,139 @@ def get_user_id(headers):
         print(f"Error getting user ID: {e}")
         return None
 
+
 def get_bookmarks(max_results=25, show_rate_limit_info=True):
     """Fetch user bookmarks from X API with rate limiting considerations"""
-    
+
     if not check_credentials():
         return None
-    
+
     # Create OAuth 2.0 User Context authentication headers
     headers = create_oauth2_headers()
-    
+
     # First, get the user ID
     user_id = get_user_id(headers)
     if not user_id:
         print("Failed to get user ID. Check your access token.")
         return None
-    
+
     print(f"Using user ID: {user_id}")
-    
+
     # API endpoint - use specific user ID instead of /me
     url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
-    
+
     # Parameters for the request
     params = {
         "tweet.fields": "created_at,author_id,text,public_metrics",
         "expansions": "author_id",
         "user.fields": "name,username,verified",
-        "max_results": min(max_results, 100)  # API max is 100, but we default to 25
+        "max_results": min(max_results, 100),  # API max is 100, but we default to 25
     }
-    
+
     try:
         print(f"Fetching your X bookmarks (max {max_results})...")
         if show_rate_limit_info:
             print("Rate limit: 75 requests per 15 minutes for bookmarks endpoint")
-        
+
         response = requests.get(url, headers=headers, params=params)
-        
+
         # Handle rate limiting
         if handle_rate_limit_response(response):
             return None
-        
+
         # Show rate limit info
         if show_rate_limit_info:
-            remaining = response.headers.get('x-rate-limit-remaining')
-            reset_time = response.headers.get('x-rate-limit-reset')
+            remaining = response.headers.get("x-rate-limit-remaining")
+            reset_time = response.headers.get("x-rate-limit-reset")
             if remaining and reset_time:
-                print(f"Rate limit remaining: {remaining}/75 (resets at {time.ctime(int(reset_time))})")
-        
+                reset_time_str = time.ctime(int(reset_time))
+                print(f"Rate limit remaining: {remaining}/75 (resets at {reset_time_str})")
+
         if response.status_code == 200:
             data = response.json()
-            
+
             # Check if there are bookmarks
-            if 'data' in data and data['data']:
-                bookmarks = data['data']
-                users = {user['id']: user for user in data.get('includes', {}).get('users', [])}
-                
+            if data.get("data"):
+                bookmarks = data["data"]
+                users = {user["id"]: user for user in data.get("includes", {}).get("users", [])}
+
                 print(f"\nFound {len(bookmarks)} bookmarks:")
                 print("=" * 60)
-                
+
                 for i, bookmark in enumerate(bookmarks, 1):
-                    author_id = bookmark.get('author_id')
+                    author_id = bookmark.get("author_id")
                     author = users.get(author_id, {})
-                    author_name = author.get('name', 'Unknown')
-                    author_username = author.get('username', 'unknown')
-                    
+                    author_name = author.get("name", "Unknown")
+                    author_username = author.get("username", "unknown")
+
                     print(f"\n{i}. Tweet by @{author_username} ({author_name})")
                     print(f"   Created: {bookmark.get('created_at', 'Unknown')}")
-                    
+
                     # Handle text display more carefully
-                    text = bookmark.get('text', 'No text')
+                    text = bookmark.get("text", "No text")
                     if len(text) > 100:
                         print(f"   Text: {text[:100]}...")
                     else:
                         print(f"   Text: {text}")
-                    
-                    metrics = bookmark.get('public_metrics', {})
+
+                    metrics = bookmark.get("public_metrics", {})
                     if metrics:
-                        print(f"   Likes: {metrics.get('like_count', 0)}, Retweets: {metrics.get('retweet_count', 0)}")
-                    
+                        likes = metrics.get("like_count", 0)
+                        retweets = metrics.get("retweet_count", 0)
+                        print(f"   Likes: {likes}, Retweets: {retweets}")
+
                     print(f"   Tweet ID: {bookmark.get('id')}")
-                
+
                 # Check if there are more pages
-                if 'meta' in data and 'next_token' in data['meta']:
+                if "meta" in data and "next_token" in data["meta"]:
                     print("\nNote: There are more bookmarks available.")
                     print(f"Next token: {data['meta']['next_token']}")
                     print("Run again with --paginate to fetch more (uses additional API calls)")
-                
+
                 return data
-                
+
             else:
                 print("No bookmarks found or no data returned.")
                 return data
-                
+
         else:
             print(f"Error: {response.status_code}")
             print(f"Response: {response.text}")
             return None
-            
+
     except Exception as e:
         print(f"Error fetching bookmarks: {e}")
         return None
+
 
 def get_bookmarks_json(max_results=25):
     """Fetch bookmarks and return raw JSON"""
     if not check_credentials():
         return None
-    
+
     # Create OAuth 2.0 User Context authentication headers
     headers = create_oauth2_headers()
-    
+
     # First, get the user ID
     user_id = get_user_id(headers)
     if not user_id:
         print("Failed to get user ID. Check your access token.")
         return None
-    
+
     url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
     params = {
         "tweet.fields": "created_at,author_id,text,public_metrics",
         "expansions": "author_id",
         "user.fields": "name,username,verified",
-        "max_results": min(max_results, 100)
+        "max_results": min(max_results, 100),
     }
-    
+
     try:
         response = requests.get(url, headers=headers, params=params)
-        
+
         if handle_rate_limit_response(response):
             return None
-            
+
         if response.status_code == 200:
             return response.json()
         else:
@@ -196,6 +205,7 @@ def get_bookmarks_json(max_results=25):
     except Exception as e:
         print(f"Error: {e}")
         return None
+
 
 def show_usage():
     """Show usage instructions"""
@@ -226,15 +236,16 @@ Authentication:
   - This token is obtained via the OAuth 2.0 Authorization Code flow with PKCE
     """)
 
+
 if __name__ == "__main__":
     # Parse command line arguments
     args = sys.argv[1:]
-    
+
     # Default values
     output_json = False
     max_results = 25
     show_rate_info = True
-    
+
     # Parse arguments
     i = 0
     while i < len(args):
@@ -262,12 +273,12 @@ if __name__ == "__main__":
             show_usage()
             sys.exit(1)
         i += 1
-    
+
     # Validate max_results
     if max_results < 1 or max_results > 100:
         print("Error: max-results must be between 1 and 100")
         sys.exit(1)
-    
+
     if output_json:
         # Return raw JSON
         data = get_bookmarks_json(max_results)
