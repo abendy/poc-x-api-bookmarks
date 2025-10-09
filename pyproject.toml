@@ -1,0 +1,164 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "x-api-bookmarks"
+version = "0.1.0"
+description = "X API bookmark management with OAuth 2.0 PKCE authentication"
+requires-python = ">=3.9"
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "factory-boy",
+    "ipdb",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-xdist",
+    "pyright",
+    "ruff",
+]
+
+[project.scripts]
+x-bookmarks = "bookmarks:main"
+x-oauth = "oauth2_pkce:main"
+
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "C",    # flake8-comprehensions
+    "B",    # flake8-bugbear
+    "ARG",  # unused arguments
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "RUF",  # ruff-specific rules
+    "SIM",  # flake8-simplify (modern code patterns)
+    "PTH",  # flake8-use-pathlib (pathlib over os.path)
+]
+ignore = [
+    "B904",  # Allow raising exceptions without from in some cases
+    "RUF012",  # Allow mutable class attributes without ClassVar for now
+    "PTH110", # Allow os.path.exists for now (pathlib migration can be gradual)
+    "PTH123", # Allow os.path.dirname/basename for now (pathlib migration can be gradual)
+    "SIM108", # Allow if-else over ternary when more readable
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    ".uv_cache",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Ignore unused imports in __init__ files
+"tests/**/*" = ["ARG001"]  # Allow unused arguments in tests for fixtures
+
+[tool.ruff.lint.isort]
+known-first-party = ["x_api"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15  # Increased from default 10 to allow for more complex functions
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+exclude = [
+    "venv",
+    ".venv",
+    "build",
+    "dist",
+]
+
+[tool.pyright]
+pythonVersion = "3.9"
+exclude = [
+    "venv",
+    ".venv",
+    "build",
+    "dist",
+    ".mypy_cache",
+    ".pytest_cache",
+]
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = """
+    --strict-markers
+    --strict-config
+    -ra
+    -v
+    --doctest-modules
+    --cov=.
+    --cov-report=term-missing
+    --cov-report=xml:coverage.xml
+    --cov-report=html:coverage_html
+"""
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+xfail_strict = true
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+markers = [
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+    "e2e: marks tests as end-to-end tests",
+    "slow: marks tests as slow running",
+    "network: marks tests that require network access",
+]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"

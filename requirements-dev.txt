@@ -1,0 +1,13 @@
+-r requirements.txt
+factory-boy
+ipdb
+mypy
+pre-commit
+pyright
+pytest
+pytest-asyncio
+pytest-cov
+pytest-mock
+pytest-xdist
+ruff
+types-requests

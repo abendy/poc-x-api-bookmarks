@@ -18,35 +18,69 @@ A Python script to fetch your X (Twitter) bookmarks using the X API v2 with prop
 
 1. **Create a X Developer Account** at [developer.x.com](https://developer.x.com)
 2. **Create a new App** in your developer dashboard
-3. **Generate OAuth 2.0 User Context credentials:**
-   - User Access Token (Bearer Token)
-4. **Ensure your app has the following permissions:**
-   - Read permissions
-   - OAuth 2.0 enabled with User Context
-
-### Python Dependencies
-
-```bash
-pip install requests python-dotenv
-```
+3. **Configure OAuth 2.0 settings:**
+   - Type: Web App, Automated App or Bot
+   - Callback URI: `http://localhost:8080/callback`
+   - Scopes: Read permissions (bookmark.read, tweet.read, users.read)
+4. **Get your Client ID** from the app settings
 
 ## Installation
 
-1. **Clone or download the script files:**
-   - `bookmarks.py` - Main script
+### 1. Clone the Repository
 
-2. **Create your environment file:**
+```bash
+git clone <repository-url>
+cd x-api
+```
 
-   ```bash
-   # Create .env file with your OAuth 2.0 User Context credentials
-   touch .env
-   ```
+### 2. Set Up Python Environment
 
-3. **Edit `.env` with your actual credentials:**
+```bash
+# Create virtual environment
+python3 -m venv venv
 
-   ```bash
-   BEARER_TOKEN=your_oauth2_user_access_token_here
-   ```
+# Activate virtual environment
+source venv/bin/activate  # On macOS/Linux
+# or
+venv\Scripts\activate     # On Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# For development (includes linting, testing, type checking)
+pip install -r requirements-dev.txt
+```
+
+### 3. Configure Environment Variables
+
+```bash
+# Copy the template
+cp .env.template .env
+
+# Edit .env and add your CLIENT_ID
+# CLIENT_ID=your_client_id_here
+```
+
+### 4. Authenticate with X API
+
+Run the OAuth 2.0 flow to get your user access token:
+
+```bash
+python3 oauth2_pkce.py
+```
+
+This will:
+- Open your browser for authorization
+- Start a local server to capture the callback
+- Save your `USER_ACCESS_TOKEN` to `.env` automatically
+
+### 5. (Optional) Set Up Pre-Commit Hooks
+
+```bash
+pre-commit install
+```
+
+This enables automatic code formatting and linting before each commit.
 
 ## Usage
 

@@ -1,0 +1,25 @@
+{
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "always"
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.fixAll": [
+        "source.unusedImports"
+    ],
+    "mypy-type-checker.args": [
+        "--config-file",
+        "pyproject.toml"
+    ],
+    "python.jediEnabled": false,
+    "python.defaultInterpreterPath": "venv/bin/python",
+    "python.languageServer": "Pylance",
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#3776AB", // Python blue
+        "statusBar.foreground": "#FFFFFF", // White text for contrast
+        "tree.indentGuidesStroke": "#3776AB" // Python blue
+    }
+}
