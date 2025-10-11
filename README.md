@@ -2,16 +2,6 @@
 
 A Python script to fetch your X (Twitter) bookmarks using the X API v2 with proper rate limiting and OAuth 2.0 User Context authentication.
 
-## Features
-
-- ✅ OAuth 2.0 User Context authentication
-- ✅ Rate limit monitoring and handling
-- ✅ Environment variable configuration
-- ✅ Conservative defaults to avoid hitting API limits
-- ✅ JSON and pretty-print output options
-- ✅ Flexible batch size control
-- ✅ Comprehensive error handling
-
 ## Prerequisites
 
 ### X Developer Account Setup
@@ -170,60 +160,6 @@ python3 bookmarks.py --max-results 25  # Uses 1 request
 # The script will tell you exactly when the limit resets
 ```
 
-## Error Handling
-
-The script handles common errors gracefully:
-
-- **Missing credentials**: Validates environment variables
-- **Rate limiting**: Detects 429 responses and shows reset time
-- **API errors**: Displays error codes and messages
-- **Network issues**: Catches and reports connection errors
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"Missing required environment variables"**
-   - Check that your `.env` file exists and has the BEARER_TOKEN
-   - Verify there are no extra spaces or quotes around values
-   - Ensure you're using OAuth 2.0 User Context Bearer Token, not OAuth 2.0 Application-Only
-
-2. **"Rate limit exceeded"**
-   - Wait for the reset time shown in the error message
-   - Use smaller `--max-results` values to conserve requests
-
-3. **"Error: 401 Unauthorized"**
-   - Verify your OAuth 2.0 User Context Bearer Token is correct
-   - Check that your X app has read permissions
-   - Ensure OAuth 2.0 User Context is enabled for your app
-   - Your access token may have expired - get a new one
-
-4. **"Error: 403 Forbidden"**
-   - Your app may not have the required permissions
-   - Check your X Developer Portal app settings
-   - Ensure you're using OAuth 2.0 User Context authentication, not Application-Only
-
-### Debug Steps
-
-1. **Verify credentials:**
-
-   ```bash
-   # Check environment variables are loaded
-   python3 -c "from dotenv import load_dotenv; import os; load_dotenv(); print('Bearer Token:', os.environ.get('BEARER_TOKEN', 'NOT FOUND')[:10] + '...')"
-   ```
-
-2. **Test with minimal request:**
-
-   ```bash
-   python3 bookmarks.py --max-results 5
-   ```
-
-3. **Check JSON output:**
-
-   ```bash
-   python3 bookmarks.py --json --max-results 5
-   ```
-
 ## About Non-Folder Bookmarks
 
 **Important Note**: The X API v2 does not currently provide a way to distinguish between bookmarks that are in folders versus those that are not. This script will return ALL your bookmarks.
@@ -233,13 +169,6 @@ To filter non-folder bookmarks, you would need to:
 1. Get all bookmarks using this script
 2. Use the X web interface to identify which bookmarks are in folders
 3. Filter the results manually or programmatically
-
-## Security Notes
-
-- **Never commit your `.env` file** to version control
-- **Keep your API credentials secure** and don't share them
-- **Regenerate credentials** if you suspect they've been compromised
-- **Use environment variables** in production environments
 
 ## API Reference
 
