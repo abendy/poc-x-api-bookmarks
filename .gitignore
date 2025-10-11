@@ -1,3 +1,36 @@
+# Python
+__pycache__/
+.*_cache
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 .env
+.venv
+venv/
+
+# UV
+.uv_cache/
+uv.lock
+
+# IDE
 .claude
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
 CLAUDE.md

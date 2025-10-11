@@ -5,6 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "x-api-bookmarks"
 version = "0.1.0"
+authors = [{ name = "Allan Bendy", email = "allan.bendy@gmail.com" }]
 description = "X API bookmark management with OAuth 2.0 PKCE authentication"
 requires-python = ">=3.9"
 dependencies = [
@@ -27,10 +28,59 @@ dev = [
     "ruff",
 ]
 
-[project.scripts]
-x-bookmarks = "bookmarks:main"
-x-oauth = "oauth2_pkce:main"
+[tool.hatch.build.targets.wheel]
+packages = []
+only-include = ["collector.py", "oauth2_pkce.py"]
 
+
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+autoImportCompletions = true
+diagnosticMode = "workspace"
+
+# Set Type Checking Mode
+typeCheckingMode = "basic"
+
+# Critical
+reportMissingImports = "error"
+reportUndefinedVariable = "error"
+reportUnboundVariable = "error"
+reportAttributeAccessIssue = "error"
+
+# Useful warnings
+reportGeneralTypeIssues = "warning"
+reportUnknownParameterType = "none"
+reportUnknownVariableType = "none"
+reportUnknownMemberType = "none"
+reportOptionalSubscript = "warning"
+reportUnusedImport = "warning"
+
+# Ignore unnecessary strictness
+reportMissingTypeStubs = "none"
+reportUntypedFunctionDecorator = "none"
+reportUntypedClassDecorator = "none"
+
+[tool.mypy]
+python_version = "3.9"
+pretty = true                         # Enables pretty printing of error messages
+# Critical
+ignore_missing_imports = true       # Avoid unnecessary import errors
+check_untyped_defs = true           # Type-checks functions even without type hints
+warn_unreachable = true             # Detects dead code
+disallow_incomplete_defs = false    # Disallow incomplete function definitions
+no_implicit_optional = true         # Disallow implicit `None` handling
+strict_equality = true              # Enables strict equality checks
+# Useful warnings
+disallow_untyped_defs = false       # Set to `true` if you want all functions typed
+disallow_untyped_calls = false      # Disallows calling functions without type hints
+disallow_untyped_decorators = false # Disallow untyped decorators
+warn_unused_ignores = true          # Warns when a `# type: ignore` comment is unnecessary
+warn_return_any = true              # Helps catch functions returning `Any`
+warn_redundant_casts = true         # Warns when a cast is unnecessary
+warn_no_return = false              # Warns when a function doesn't have a return type
+warn_unused_configs = true          # Warns when a config is unused
 
 [tool.ruff]
 line-length = 100
@@ -50,15 +100,24 @@ select = [
     "RUF",  # ruff-specific rules
     "SIM",  # flake8-simplify (modern code patterns)
     "PTH",  # flake8-use-pathlib (pathlib over os.path)
+    "D",    # docstring conventions
 ]
 ignore = [
-    "B904",  # Allow raising exceptions without from in some cases
-    "RUF012",  # Allow mutable class attributes without ClassVar for now
+    "B904",   # Allow raising exceptions without from in some cases
+    "D202",   # No blank lines allowed after function docstring
+    "D203",   # Ignore one-blank-line-before-class to avoid conflict with D211
+    "D212",   # Multi-line docstring summary should start at the first line
+    "D401",   # Imperative mood required in docstring summary
+    "D406",   # Section name should end with a newline
+    "D407",   # Missing dashed underline after docstring sections
+    "D413",   # Missing blank line after last section
+    "FIX002", # Ignore TODO/FIXME
+    "N802",   # Allow do_GET method name (required by BaseHTTPRequestHandler)
+    "PTH107", # Allow os.remove for now (pathlib migration can be gradual)
     "PTH110", # Allow os.path.exists for now (pathlib migration can be gradual)
     "PTH123", # Allow os.path.dirname/basename for now (pathlib migration can be gradual)
-    "PTH107", # Allow os.remove for now (pathlib migration can be gradual)
+    "RUF012", # Allow mutable class attributes without ClassVar for now
     "SIM108", # Allow if-else over ternary when more readable
-    "N802",   # Allow do_GET method name (required by BaseHTTPRequestHandler)
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
@@ -107,38 +166,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
-
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-exclude = [
-    "venv",
-    ".venv",
-    ".vscode",
-    "build",
-    "dist",
-]
-
-[[tool.mypy.overrides]]
-module = ["dotenv"]
-ignore_missing_imports = true
-
-[tool.pyright]
-pythonVersion = "3.9"
-exclude = [
-    "venv",
-    ".venv",
-    ".vscode",
-    "build",
-    "dist",
-    ".mypy_cache",
-    ".pytest_cache",
-]
-reportMissingTypeStubs = false
-reportUnknownMemberType = false
-reportMissingImports = false
 
 [tool.pytest.ini_options]
 minversion = "8.0"

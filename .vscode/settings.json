@@ -14,8 +14,13 @@
         "--config-file",
         "pyproject.toml"
     ],
+    "mypy-type-checker.reportingScope": "workspace",
+    "mypy-type-checker.severity": {
+        "error": "Error",
+        "note": "Information"
+    },
     "python.jediEnabled": false,
-    "python.defaultInterpreterPath": "venv/bin/python",
+    "python.defaultInterpreterPath": ".venv/bin/python",
     "python.languageServer": "Pylance",
     "workbench.colorCustomizations": {
         "statusBar.background": "#3776AB", // Python blue

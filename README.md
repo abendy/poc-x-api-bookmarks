@@ -36,19 +36,21 @@ cd x-api
 ### 2. Set Up Python Environment
 
 ```bash
+# Install UV (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Create virtual environment
-python3 -m venv venv
-
-# Activate virtual environment
-source venv/bin/activate  # On macOS/Linux
+uv venv
+source .venv/bin/activate  # On macOS/Linux
 # or
-venv\Scripts\activate     # On Windows
+.venv\Scripts\activate     # On Windows
 
-# Install dependencies
-pip install -r requirements.txt
+# Install runtime dependencies
+uv pip install python-dotenv requests
 
 # For development (includes linting, testing, type checking)
-pip install -r requirements-dev.txt
+uv pip install mypy pre-commit pytest pytest-asyncio pytest-cov \
+    pytest-mock pytest-xdist pyright ruff factory-boy ipdb
 ```
 
 ### 3. Configure Environment Variables
