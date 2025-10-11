@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-OAuth 2.0 Authorization Code Flow with PKCE for X API
+OAuth 2.0 Authorization Code Flow with PKCE for X API.
+
 This script will help you get a user access token for bookmarks.
 """
 
@@ -24,7 +25,7 @@ REDIRECT_URI = os.environ.get("REDIRECT_URI", "http://localhost:8080/callback")
 
 
 def generate_pkce_pair():
-    """Generate PKCE code verifier and challenge"""
+    """Generate PKCE code verifier and challenge."""
     code_verifier = base64.urlsafe_b64encode(secrets.token_bytes(32)).decode("utf-8").rstrip("=")
     code_challenge = (
         base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode("utf-8")).digest())
@@ -35,7 +36,7 @@ def generate_pkce_pair():
 
 
 def create_authorization_url():
-    """Create the authorization URL for OAuth 2.0 flow"""
+    """Create the authorization URL for OAuth 2.0 flow."""
     code_verifier, code_challenge = generate_pkce_pair()
 
     # Store code_verifier for later use
@@ -57,7 +58,7 @@ def create_authorization_url():
 
 
 def exchange_code_for_token(authorization_code, code_verifier):
-    """Exchange authorization code for access token"""
+    """Exchange authorization code for access token."""
     token_url = "https://api.x.com/2/oauth2/token"
 
     data = {
@@ -90,7 +91,7 @@ def exchange_code_for_token(authorization_code, code_verifier):
 
 
 def start_local_server():
-    """Start a simple local server to capture the callback"""
+    """Start a simple local server to capture the callback."""
     import threading
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -152,7 +153,7 @@ def start_local_server():
 
 
 def main():
-    """Main OAuth 2.0 flow"""
+    """Main OAuth 2.0 flow."""
     print("X API OAuth 2.0 Authorization Code Flow with PKCE")
     print("=" * 50)
 

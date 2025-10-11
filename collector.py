@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-X API Complete Bookmark Collector
-Systematically collects ALL bookmarks using delete-to-paginate methodology
+X API Complete Bookmark Collector.
+
+Systematically collects ALL bookmarks using delete-to-paginate methodology.
 """
 
 import json
@@ -20,7 +21,19 @@ USER_ACCESS_TOKEN = os.environ.get("USER_ACCESS_TOKEN")
 
 
 class CompleteBookmarkCollector:
+    """
+    Systematically collects all X (Twitter) bookmarks using a delete-to-paginate methodology,
+    storing them in a local SQLite database and supporting test mode for safe operations.
+    """  # noqa: D205
+
     def __init__(self, db_path="complete_bookmarks.db", test_mode=False):
+        """
+        Initialize the CompleteBookmarkCollector.
+
+        Args:
+            db_path (str): Path to the SQLite database file.
+            test_mode (bool): If True, bookmarks will not be deleted.
+        """
         self.db_path = db_path
         self.user_access_token = USER_ACCESS_TOKEN
         self.user_id = None
@@ -28,7 +41,7 @@ class CompleteBookmarkCollector:
         self.setup_local_storage()
 
     def setup_local_storage(self):
-        """Initialize local SQLite database for bookmark storage"""
+        """Initialize local SQLite database for bookmark storage."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -69,14 +82,14 @@ class CompleteBookmarkCollector:
         conn.close()
 
     def create_headers(self):
-        """Create OAuth 2.0 User Context authentication headers"""
+        """Create OAuth 2.0 User Context authentication headers."""
         return {
             "Authorization": f"Bearer {self.user_access_token}",
             "Content-Type": "application/json",
         }
 
     def get_user_id(self):
-        """Get the current user's ID"""
+        """Get the current user's ID."""
         if self.user_id:
             return self.user_id
 
@@ -97,7 +110,7 @@ class CompleteBookmarkCollector:
             return None
 
     def get_bookmarks(self, max_results=100):
-        """Fetch bookmarks from X API"""
+        """Fetch bookmarks from X API."""
         if not self.user_access_token:
             print("Error: USER_ACCESS_TOKEN not found")
             return None
@@ -109,9 +122,102 @@ class CompleteBookmarkCollector:
         url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
         headers = self.create_headers()
         params = {
-            "tweet.fields": "created_at,author_id,text,public_metrics",
-            "expansions": "author_id",
-            "user.fields": "name,username,verified",
+            # Request all available tweet fields
+            "tweet.fields": ",".join(
+                [
+                    "attachments",
+                    "author_id",
+                    "context_annotations",
+                    "conversation_id",
+                    "created_at",
+                    "edit_controls",
+                    "edit_history_tweet_ids",
+                    "entities",
+                    "geo",
+                    "id",
+                    "in_reply_to_user_id",
+                    "lang",
+                    "possibly_sensitive",
+                    "public_metrics",
+                    "referenced_tweets",
+                    "reply_settings",
+                    "source",
+                    "text",
+                    "withheld",
+                ]
+            ),
+            # Request all available expansions
+            "expansions": ",".join(
+                [
+                    "attachments.media_keys",
+                    "attachments.poll_ids",
+                    "author_id",
+                    "edit_history_tweet_ids",
+                    "entities.mentions.username",
+                    "geo.place_id",
+                    "in_reply_to_user_id",
+                    "referenced_tweets.id",
+                    "referenced_tweets.id.author_id",
+                ]
+            ),
+            # Request all available user fields
+            "user.fields": ",".join(
+                [
+                    "created_at",
+                    "description",
+                    "entities",
+                    "id",
+                    "location",
+                    "name",
+                    "pinned_tweet_id",
+                    "profile_image_url",
+                    "protected",
+                    "public_metrics",
+                    "url",
+                    "username",
+                    "verified",
+                    "verified_type",
+                    "withheld",
+                ]
+            ),
+            # Request all available media fields
+            "media.fields": ",".join(
+                [
+                    "alt_text",
+                    "duration_ms",
+                    "height",
+                    "media_key",
+                    "preview_image_url",
+                    "public_metrics",
+                    "type",
+                    "url",
+                    "variants",
+                    "width",
+                ]
+            ),
+            # Request all available place fields
+            "place.fields": ",".join(
+                [
+                    "contained_within",
+                    "country",
+                    "country_code",
+                    "full_name",
+                    "geo",
+                    "id",
+                    "name",
+                    "place_type",
+                ]
+            ),
+            # Request all available poll fields
+            "poll.fields": ",".join(
+                [
+                    "duration_minutes",
+                    "end_datetime",
+                    "id",
+                    "options",
+                    "voting_status",
+                ]
+            ),
             "max_results": min(max_results, 100),
         }
 
@@ -133,7 +239,7 @@ class CompleteBookmarkCollector:
             return None
 
     def delete_bookmark(self, tweet_id):
-        """Delete a specific bookmark"""
+        """Delete a specific bookmark."""
         user_id = self.get_user_id()
         if not user_id:
             return False
@@ -149,7 +255,7 @@ class CompleteBookmarkCollector:
             return False
 
     def store_bookmark(self, bookmark, cycle, author_info=None):
-        """Store bookmark in local database"""
+        """Store bookmark in local database."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -179,7 +285,7 @@ class CompleteBookmarkCollector:
         conn.close()
 
     def verify_bookmark_stored(self, tweet_id):
-        """Verify that a bookmark exists in local database before deletion"""
+        """Verify that a bookmark exists in local database before deletion."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("SELECT tweet_id FROM bookmarks WHERE tweet_id = ?", (tweet_id,))
@@ -188,7 +294,7 @@ class CompleteBookmarkCollector:
         return result is not None
 
     def execute_collection_cycle(self, cycle_number):
-        """Execute one complete collection cycle: GET → Store → DELETE"""
+        """Execute one complete collection cycle: GET → Store → DELETE."""
         cycle_start = datetime.now()
         print(f"\n{'=' * 60}")
         print(f"Starting Collection Cycle {cycle_number}")
@@ -278,7 +384,7 @@ class CompleteBookmarkCollector:
         }
 
     def log_cycle_progress(self, cycle, found, deleted, start_time, end_time, duration: timedelta):
-        """Log cycle progress to database"""
+        """Log cycle progress to database."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -306,7 +412,7 @@ class CompleteBookmarkCollector:
         conn.close()
 
     def get_total_collected(self):
-        """Get total number of bookmarks collected"""
+        """Get total number of bookmarks collected."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM bookmarks")
@@ -315,7 +421,7 @@ class CompleteBookmarkCollector:
         return count
 
     def wait_rate_limit(self):
-        """Wait for rate limit reset (15 minutes)"""
+        """Wait for rate limit reset (15 minutes)."""
         wait_time = 15 * 60  # 15 minutes in seconds
         print(f"\nWaiting {wait_time // 60} minutes for rate limit reset...")
 
@@ -329,7 +435,7 @@ class CompleteBookmarkCollector:
         print("Rate limit wait complete!\n")
 
     def run_complete_collection(self, max_cycles=1000):
-        """Execute complete bookmark collection process"""
+        """Execute complete bookmark collection process."""
         print("Starting Complete Bookmark Collection")
         if self.test_mode:
             print("** TEST MODE ENABLED - Bookmarks will NOT be deleted **")
@@ -361,7 +467,7 @@ class CompleteBookmarkCollector:
         self.print_final_summary()
 
     def print_final_summary(self):
-        """Print final collection summary"""
+        """Print final collection summary."""
         total_collected = self.get_total_collected()
 
         conn = sqlite3.connect(self.db_path)
@@ -397,7 +503,7 @@ class CompleteBookmarkCollector:
 
 
 def main():
-    """Main entry point"""
+    """Main entry point."""
     import argparse
 
     parser = argparse.ArgumentParser(description="Complete X API Bookmark Collector")

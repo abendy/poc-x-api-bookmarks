@@ -26,6 +26,7 @@ dev = [
     "pytest-xdist",
     "pyright",
     "ruff",
+    "types-requests",
 ]
 
 [tool.hatch.build.targets.wheel]

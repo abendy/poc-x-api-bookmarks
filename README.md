@@ -40,7 +40,7 @@ uv pip install python-dotenv requests
 
 # For development (includes linting, testing, type checking)
 uv pip install mypy pre-commit pytest pytest-asyncio pytest-cov \
-    pytest-mock pytest-xdist pyright ruff factory-boy ipdb
+    pytest-mock pytest-xdist pyright ruff factory-boy ipdb types-requests
 ```
 
 ### 3. Configure Environment Variables
